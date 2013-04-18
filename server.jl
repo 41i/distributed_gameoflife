@@ -2,8 +2,8 @@ using HttpServer
 using Httplib
 using Websockets
 
-red = "\"red\""
-green = "\"green\""
+red = "\"white\""
+green = "\"black\""
 function construct_frame(data)
   arr = fill(green,size(data)...)
   h,w = size(data)
