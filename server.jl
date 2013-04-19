@@ -27,11 +27,12 @@ wsh = WebsocketHandler() do req::Request, ws::Websocket
   while true
     arr = construct_frame(firststep)
     write(ws,"[$(join(arr,","))]")
+    print(".")
     step!(dprev,firststep,4)
   end
 end
 
-file = readall("/home/leah/conway.html")
+file = readall("conway.html")
 http = HttpHandler() do req::Request, res::Response
     Response(file)
 end
