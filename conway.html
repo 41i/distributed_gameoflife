@@ -43,8 +43,8 @@
         canvas.width = getDocWidth();
         canvas.height = getDocHeight();
 
-        ctx.fillStyle = "blue";
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "gray";
+        ctx.fillRect(0,0,610,610);
 
         //Websockets
         ws = new WebSocket("ws://bosca.acm.jhu.edu:8010/")
@@ -54,7 +54,7 @@
           for(i=0;i<100;i++) {
             for(j=0;j<100;j++) {
               ctx.fillStyle = s[(i*100) + j];
-              ctx.fillRect(i*8, j*8, 8, 8);
+              ctx.fillRect(i*6, j*6, 6, 6);
             }
           }
         };
