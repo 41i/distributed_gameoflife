@@ -16,13 +16,21 @@ end
 addprocs({"node011","node012","node013"})
 require("gameoflife.jl")
 
+function add_glider(arr,i::Int,j::Int)
+  arr[i,j+1] = true
+  arr[i+1,j+2] = true
+  arr[i+2,j] = true
+  arr[i+2,j+1] = true
+  arr[i+2,j+2] = true
+end
+
 wsh = WebsocketHandler() do req::Request, ws::Websocket
   firststep = zeros(Bool,100,100)
-  firststep[1,2] = true
-  firststep[2,3] = true
-  firststep[3,1] = true
-  firststep[3,2] = true
-  firststep[3,3] = true
+  for i=1:97,j=1:97
+    if i % 5 == 1 && j % 5 == 1
+      add_glider(firststep,i,j)
+    end
+  end
   dprev = distribute(firststep)
   while true
     arr = construct_frame(firststep)
