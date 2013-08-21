@@ -47,13 +47,13 @@
         ctx.fillRect(0,0,610,610);
 
         //Websockets
-        ws = new WebSocket("ws://bosca.acm.jhu.edu:8010/")
+        ws = new WebSocket("ws://localhost:8080/")
         ws.onmessage = function(msg) {
           console.log("received");
           s = JSON.parse(msg.data);
           for(i=0;i<100;i++) {
             for(j=0;j<100;j++) {
-              ctx.fillStyle = s[(i*100) + j];
+              ctx.fillStyle = s[i][j];
               ctx.fillRect(i*6, j*6, 6, 6);
             }
           }

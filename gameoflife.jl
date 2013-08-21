@@ -1,19 +1,19 @@
 
 function countneighbors(prevstep,i::Int,j::Int) #prevstep is Array{Bool,2}
   kmax,mmax = size(prevstep)
-  count = 0                      
-  for k=(i-1):(i+1),m=(j-1):(j+1)        
+  count = 0
+  for k=(i-1):(i+1),m=(j-1):(j+1)
     #wrap out of bounds values
-    k = (k < 1) ? kmax : k  
-    k = (k > kmax) ? 1 : k                  
-    m = (m < 1) ? mmax : m                  
+    k = (k < 1) ? kmax : k
+    k = (k > kmax) ? 1 : k
+    m = (m < 1) ? mmax : m
     m = (m > mmax) ? 1 : m
 
-    #if not self, then count if live      
+    #if not self, then count if live
     if (!(k==i && m==j)) && prevstep[k,m]
-      count += 1 
-    end       
-  end         
+      count += 1
+    end
+  end
   return count
 end
 
@@ -43,20 +43,21 @@ function step(prevstep,rangei::Range1{Int},rangej::Range1{Int})
   return output
 end
 
-function stepeverywhere(dprev,n::Int) 
-  rs = Array(Any,n)
-  for i=1:n
-    rs[i] = @spawn (myindexes(dprev),step(dprev,myindexes(dprev)...))
+function stepeverywhere(dprev)
+  ps = procs(dprev)
+  rs = Array(RemoteRef, length(ps))
+  for i=1:(length(ps))
+    rs[i] = @spawnat ps[i] (myindexes(dprev),step(dprev,myindexes(dprev)...))
   end
-  for i=1:n
-    rs[i] = fetch(rs[i])
-  end
-  return rs
+  println("+")
+  result = [fetch(r) for r=rs]
+  println("*")
+  return result
 end
 
 function copyfrom(destarray,tuple,inputarray)
-  r1,r2 = tuple 
-  destarray[r1,r2] = inputarray 
+  r1,r2 = tuple
+  destarray[r1,r2] = inputarray
 end
 
 function assemble(newarray,pieces)
@@ -74,10 +75,10 @@ function pretty_print(a::Array{Bool,2})
     end
     print("\n")
   end
-end 
+end
 
-function step!(dprev,nextstep,n::Int)
+function step!(dprev,nextstep)
   dprev = distribute(nextstep)
-  assemble(nextstep,stepeverywhere(dprev,n))
+  assemble(nextstep,stepeverywhere(dprev))
   #pretty_print(nextstep)
 end

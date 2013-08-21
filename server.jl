@@ -1,19 +1,19 @@
 using HttpServer
-using Httplib
-using Websockets
+using HttpCommon
+using WebSockets
+using JSON
 
-red = "\"white\""
-green = "\"black\""
 function construct_frame(data)
-  arr = fill(green,size(data)...)
+  arr = fill("black",size(data)...)
   h,w = size(data)
   for i=1:h,j=1:w
-    arr[i,j] = data[i,j] ? green : red
+    arr[i,j] = data[i,j] ? "black" : "white"
   end
   return arr
 end
 
-addprocs({"node011","node012","node013"})
+#addprocs({"node011","node012","node013"})
+addprocs(3)
 require("gameoflife.jl")
 
 function add_glider(arr,i::Int,j::Int)
@@ -24,7 +24,7 @@ function add_glider(arr,i::Int,j::Int)
   arr[i+2,j+2] = true
 end
 
-wsh = WebsocketHandler() do req::Request, ws::Websocket
+wsh = WebSocketHandler() do req::Request, ws::WebSocket
   firststep = zeros(Bool,100,100)
   for i=1:97,j=1:97
     if i % 5 == 1 && j % 5 == 1
@@ -34,9 +34,9 @@ wsh = WebsocketHandler() do req::Request, ws::Websocket
   dprev = distribute(firststep)
   while true
     arr = construct_frame(firststep)
-    write(ws,"[$(join(arr,","))]")
+    write(ws,json(arr))
     print(".")
-    step!(dprev,firststep,4)
+    step!(dprev,firststep)
   end
 end
 
@@ -48,5 +48,5 @@ end
 http.events["error"]  = ( client, err ) -> println( err )
 http.events["listen"] = ( port )        -> println("Listening on $port...")
 
-server = Server(http,wsh )
-run( server, 80 )
+server = Server(http, wsh)
+run(server, 8080)
