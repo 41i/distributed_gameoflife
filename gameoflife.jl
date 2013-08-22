@@ -1,3 +1,10 @@
+function add_glider(arr,i::Int,j::Int)
+  arr[i,j+1] = true
+  arr[i+1,j+2] = true
+  arr[i+2,j] = true
+  arr[i+2,j+1] = true
+  arr[i+2,j+2] = true
+end
 
 function countneighbors(prevstep,i::Int,j::Int) #prevstep is Array{Bool,2}
   kmax,mmax = size(prevstep)
@@ -17,14 +24,14 @@ function countneighbors(prevstep,i::Int,j::Int) #prevstep is Array{Bool,2}
   return count
 end
 
+# determine if a cell would be alive next turn,
+# given the current value and number of live neighbors
 function isalive(count::Int,alreadyalive::Bool)
-  if count < 2 || count > 3
-    return false
-  else
-    return count == 3 ? true : alreadyalive
-  end
+  count == 2 ? alreadyalive : count == 3 ? true : false
 end
 
+# run conway's game of life for the specificed section of prevstep
+# writing the results into newstep
 function step(prevstep,newstep::Array{Bool,2},ri::Range1{Int},rj::Range1{Int})
   isz,jsz = size(prevstep)
   if isz + 1 < (ri.start + ri.len) || jsz + 1 < (rj.start + rj.len)
@@ -37,12 +44,16 @@ function step(prevstep,newstep::Array{Bool,2},ri::Range1{Int},rj::Range1{Int})
   end
 end
 
+# run conway's game of life for the specified section of prevstep
+# and return a new array for that fragment
 function step(prevstep,rangei::Range1{Int},rangej::Range1{Int})
   output = Array(Bool,rangei.len,rangej.len)
   step(prevstep,output,rangei,rangej)
   return output
 end
 
+# run `step` on each process that has a fragment of dprev
+# return those results assembled into a new array of the same size
 function stepeverywhere(dprev)
   ps = procs(dprev)
   rs = Array(RemoteRef, length(ps))
@@ -55,11 +66,15 @@ function stepeverywhere(dprev)
   return result
 end
 
+# given a target array, a tuple of ranges, and a smaller input array
+# copies the values from inputarray into destarray at the specified range of indices
 function copyfrom(destarray,tuple,inputarray)
   r1,r2 = tuple
   destarray[r1,r2] = inputarray
 end
 
+# newarray is the array that you want to copy a bunch of smaller arrays into
+# pieces is an array of ((range,range),array)s that say where and what data to paste in
 function assemble(newarray,pieces)
   for i=pieces
     copyfrom(newarray,i...)

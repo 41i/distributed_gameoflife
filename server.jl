@@ -16,21 +16,16 @@ end
 addprocs(3)
 require("gameoflife.jl")
 
-function add_glider(arr,i::Int,j::Int)
-  arr[i,j+1] = true
-  arr[i+1,j+2] = true
-  arr[i+2,j] = true
-  arr[i+2,j+1] = true
-  arr[i+2,j+2] = true
-end
-
 wsh = WebSocketHandler() do req::Request, ws::WebSocket
   firststep = zeros(Bool,100,100)
+
+  #tessalate gliders
   for i=1:97,j=1:97
     if i % 5 == 1 && j % 5 == 1
       add_glider(firststep,i,j)
     end
   end
+
   dprev = distribute(firststep)
   while true
     arr = construct_frame(firststep)
@@ -40,13 +35,11 @@ wsh = WebSocketHandler() do req::Request, ws::WebSocket
   end
 end
 
-file = readall("conway.html")
+file = readall("conway.html") #TODO: make this a mustache template
 http = HttpHandler() do req::Request, res::Response
     Response(file)
 end
 
-http.events["error"]  = ( client, err ) -> println( err )
-http.events["listen"] = ( port )        -> println("Listening on $port...")
-
 server = Server(http, wsh)
+println("Starting Server on port 8080")
 run(server, 8080)
